@@ -12,9 +12,10 @@ Bug 1: Hints are wrong. Expected hints that acuratlly tell whether the guess is 
 
 Bug 2: New game does not let me make guesses. When you click new game after winning or losing  it is supposed to reset counter, score and make the game playable again. The game still shows You won/losing statement and stops without allowing guesses for the the next number. In app.py file, if new_game doesn't reset st.session.status to playing around line 135-150. 
 
-Bug xtra: number of guess counter is off
 
 Bug 3 Takes invalid edge cases. When I enter decimals, excessivly large numbers above 100 or negative number, they are all taken as valid inputs/guesses with no error which uses up an attempt. File app.py has parse_guess around line 14.
+
+Bug 4 Wrong number of guesses. The attempts counter started at 1 instead of 0, so "Attempts left" was one too low and the game ended one guess early (7 guesses on Normal instead of 8). The counter also went up before the input was validated, so invalid input used up a guess. This is in app.py where attempts is initialized and where submit is handled.
 
 **Bug Reproduction Log**
 
