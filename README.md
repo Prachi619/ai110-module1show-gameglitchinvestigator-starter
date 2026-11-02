@@ -55,6 +55,15 @@ Describe your fixed game in numbered steps so a reader can follow along without 
 # Paste your pytest output here, e.g.:
 # pytest tests/
 # ========================= X passed in 0.XXs =========================
+$ python -m pytest tests/
+============================= test session starts =============================
+platform win32 -- Python 3.13.15, pytest-9.1.1, pluggy-1.6.0
+collected 6 items
+
+tests\test_game_logic.py ......                                          [100%]
+
+============================== 6 passed in 1.46s ==============================
+```???
 ```
 
 ## 🚀 Stretch Features
