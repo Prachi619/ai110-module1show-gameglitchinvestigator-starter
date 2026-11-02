@@ -11,28 +11,12 @@ def get_range_for_difficulty(difficulty: str):
     return 1, 100
 
 
-def parse_guess(raw: str):
-    if raw is None:
-        return False, None, "Enter a guess."
-
-    if raw == "":
-        return False, None, "Enter a guess."
-    # FIXME: Logic breaks here
-    try:
-        if "." in raw:
-            value = int(float(raw))
-        else:
-            value = int(raw)
-    except Exception:
-        return False, None, "That is not a number."
-
-    return True, value, None
-
-
 # FIXME: fixed bug 1 - check_guess moved to logic_utils.py with corrected hints
 # Collaboration: the AI proposed the refactor into logic_utils.py; I approved it and
 # confirmed the import still works by running the app.
-from logic_utils import check_guess
+# FIXME: fixed bug 3 - parse_guess also moved to logic_utils.py, now with a range check.
+# Collaboration: the AI and I split it the same way as check_guess so pytest can cover it.
+from logic_utils import check_guess, parse_guess
 
 
 def update_score(current_score: int, outcome: str, attempt_number: int):
@@ -80,8 +64,12 @@ st.sidebar.caption(f"Attempts allowed: {attempt_limit}")
 if "secret" not in st.session_state:
     st.session_state.secret = random.randint(low, high)
 
+# FIXME: fixed bug 4 - attempts started at 1, so "Attempts left" was one too low and the
+# game ended one guess early. It now counts guesses made, starting at 0.
+# Collaboration: I noticed "Attempts left" was 7 on a fresh Normal game; the AI found the
+# initial value of 1, and I checked it by playing a game to the full attempt limit.
 if "attempts" not in st.session_state:
-    st.session_state.attempts = 1
+    st.session_state.attempts = 0
 
 if "score" not in st.session_state:
     st.session_state.score = 0
@@ -95,7 +83,7 @@ if "history" not in st.session_state:
 st.subheader("Make a guess")
 
 st.info(
-    f"Guess a number between 1 and 100. "
+    f"Guess a number between {low} and {high}. "
     f"Attempts left: {attempt_limit - st.session_state.attempts}"
 )
 
@@ -124,7 +112,7 @@ if new_game:
     # guesses after a new game. Also reset score/history and use the difficulty range.
     # Collaboration: I reported that guesses were blocked after "New Game"; the AI found the
     # stale status, and I checked the fix by starting several new games in the app.
-    st.session_state.attempts = 1  # matches the initial value set above
+    st.session_state.attempts = 0  # matches the initial value set above
     st.session_state.secret = random.randint(low, high)
     st.session_state.status = "playing"
     st.session_state.score = 0
@@ -140,14 +128,17 @@ if st.session_state.status != "playing":
     st.stop()
 
 if submit:
-    st.session_state.attempts += 1
-
-    ok, guess_int, err = parse_guess(raw_guess)
+    ok, guess_int, err = parse_guess(raw_guess, low, high)
 
     if not ok:
         st.session_state.history.append(raw_guess)
         st.error(err)
     else:
+        # FIXME: fixed bug 4 - the attempt was counted before parsing, so invalid input
+        # used up a guess. Only valid guesses are counted now.
+        # Collaboration: the AI moved the increment after validation; I confirmed that "abc"
+        # and 500 no longer lower "Attempts left".
+        st.session_state.attempts += 1
         st.session_state.history.append(guess_int)
 
         # FIXME: fixed bug 1 - secret was converted to str on even attempts, breaking comparison
@@ -184,4 +175,4 @@ if submit:
 
 st.divider()
 st.caption("Built by an AI that claims this code is production-ready.")
-hat claims this code is production-ready.")
+
